@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>NVDA Review-Now Dashboard</title>
+<style>
+:root{
+  --bg:#0d1117;--card:#161b22;--card2:#1c2330;--line:#2a3340;--text:#e6edf3;--muted:#8b949e;
+  --green:#3fb950;--red:#f85149;--amber:#d29922;--blue:#58a6ff;--greenbg:#12331c;--redbg:#3d1416;--amberbg:#3a2c0b;--bluebg:#10263f;
+}
+@media (prefers-color-scheme: light){
+  :root{--bg:#f4f5f7;--card:#ffffff;--card2:#f0f2f5;--line:#d8dde3;--text:#1b1f24;--muted:#5d6672;
+  --green:#1a7f37;--red:#cf222e;--amber:#9a6700;--blue:#0969da;--greenbg:#dff5e4;--redbg:#ffe5e3;--amberbg:#fff3cf;--bluebg:#e1efff;}
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:14px;padding-bottom:60px}
+.num{font-variant-numeric:tabular-nums}
+h1{font-size:20px;margin:0}
+h2{font-size:15px;margin:0 0 10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:14px}
+header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.sub{color:var(--muted);font-size:13px}
+button,select,input{font:inherit;color:inherit}
+.btn{min-height:44px;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);cursor:pointer;touch-action:manipulation}
+.btn:active{transform:scale(.98)}
+.btn.sm{min-height:36px;padding:4px 10px;font-size:14px}
+.btn.primary{background:var(--green);border-color:var(--green);color:#fff;font-weight:700}
+.btn.warn{background:var(--amberbg);border-color:var(--amber)}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.grid2{display:grid;gap:14px;grid-template-columns:1fr}
+.grid3{display:grid;gap:14px;grid-template-columns:1fr}
+@media (min-width:900px){.grid2{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:repeat(3,1fr)}}
+
+/* signal bar */
+#signal{border-radius:16px;padding:16px;border:2px solid var(--line);background:var(--card);display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+#signal .state{font-size:30px;font-weight:800;letter-spacing:.02em}
+#signal.watch{border-color:var(--line)}
+#signal.ready{border-color:var(--amber);background:var(--amberbg)}
+#signal.review{border-color:var(--green);background:var(--greenbg);animation:flash 1s steps(2,start) infinite}
+#signal.stand{border-color:var(--red);background:var(--redbg)}
+@keyframes flash{50%{box-shadow:0 0 0 6px var(--green)}}
+@media (prefers-reduced-motion:reduce){#signal.review{animation:none}}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--card2);white-space:nowrap}
+.pill.g{background:var(--greenbg);border-color:var(--green);color:var(--green)}
+.pill.r{background:var(--redbg);border-color:var(--red);color:var(--red)}
+.pill.a{background:var(--amberbg);border-color:var(--amber);color:var(--amber)}
+.pill.b{background:var(--bluebg);border-color:var(--blue);color:var(--blue)}
+
+/* NVDA */
+.big{font-size:44px;font-weight:800;line-height:1.05}
+.up{color:var(--green)}.down{color:var(--red)}
+.kv{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 14px;margin-top:10px}
+@media (min-width:600px){.kv{grid-template-columns:repeat(4,1fr)}}
+.kv div span{display:block;color:var(--muted);font-size:12px}
+.ladder{position:relative;height:74px;margin:22px 8px 4px}
+.ladder .track{position:absolute;left:0;right:0;top:34px;height:6px;border-radius:3px;background:var(--card2);border:1px solid var(--line)}
+.ladder .zone{position:absolute;top:34px;height:6px;background:var(--amber);opacity:.6;border-radius:3px}
+.ladder .mk{position:absolute;top:26px;width:2px;height:22px;background:var(--muted)}
+.ladder .mk b{position:absolute;top:24px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap}
+.ladder .mk.price{background:var(--blue);width:4px;top:18px;height:38px}
+.ladder .mk.price b{top:-20px;color:var(--blue);font-size:13px}
+
+/* checklist */
+.chk{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.chk li{display:flex;gap:10px;align-items:flex-start;padding:8px;border-radius:10px;background:var(--card2)}
+.chk .mark{flex:0 0 26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;color:#fff}
+.chk .mark.ok{background:var(--green)}.chk .mark.no{background:var(--red)}.chk .mark.na{background:var(--muted)}
+.chk .body{flex:1;min-width:0}
+.chk .note{font-size:12px;color:var(--muted)}
+.tog{min-width:64px}
+.tog.on{background:var(--greenbg);border-color:var(--green);color:var(--green);font-weight:700}
+.tog.stop.on{background:var(--redbg);border-color:var(--red);color:var(--red)}
+.hint{display:inline-block;margin-top:4px;font-size:12px;color:var(--blue);background:var(--bluebg);border:1px solid var(--blue);border-radius:8px;padding:2px 8px;cursor:pointer}
+.thead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.thead strong{font-size:17px}
+.lvl{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.lvl input{width:96px;min-height:36px;border-radius:8px;border:1px solid var(--line);background:var(--bg);padding:4px 8px}
+
+/* tickers */
+.trow{display:grid;grid-template-columns:70px 1fr 78px 78px auto;gap:8px;align-items:center;padding:10px 4px;border-top:1px solid var(--line)}
+.trow:first-of-type{border-top:0}
+.trow .sym{font-weight:700}
+.trow .act{display:flex;gap:4px}
+.trow .tag{font-size:12px}
+.thd{font-size:12px;color:var(--muted)}
+.addrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.addrow input,.addrow select,.field input,.field select{min-height:44px;border-radius:10px;border:1px solid var(--line);background:var(--bg);padding:6px 10px}
+.addrow input{width:120px;text-transform:uppercase}
+
+/* news, sources, log */
+.news a{color:var(--text);text-decoration:none}
+.news li{padding:8px 0;border-top:1px solid var(--line);list-style:none}
+.news ul,.plain{margin:0;padding:0}
+.news .meta{font-size:12px;color:var(--muted)}
+.src{display:grid;grid-template-columns:14px 1fr auto;gap:8px;align-items:center;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--muted)}
+.dot.live{background:var(--green)}.dot.err{background:var(--red)}.dot.key{background:var(--amber)}
+.log li{list-style:none;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+table.f{width:100%;border-collapse:collapse;font-size:14px}
+table.f td{padding:6px 0;border-top:1px solid var(--line)}
+table.f td:last-child{text-align:right}
+
+/* modal */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:50;padding:0}
+.ov.open{display:flex}
+@media (min-width:700px){.ov{align-items:center;padding:20px}}
+.modal{background:var(--card);border:1px solid var(--line);border-radius:18px 18px 0 0;width:100%;max-width:640px;max-height:92vh;overflow:auto;padding:18px;-webkit-overflow-scrolling:touch}
+@media (min-width:700px){.modal{border-radius:18px}}
+.modal h3{margin:0 0 4px;font-size:24px}
+.verdict{padding:12px;border-radius:12px;font-weight:700;margin:12px 0;font-size:17px}
+.verdict.go{background:var(--greenbg);color:var(--green);border:1px solid var(--green)}
+.verdict.stop{background:var(--redbg);color:var(--red);border:1px solid var(--red)}
+.verdict.hold{background:var(--amberbg);color:var(--amber);border:1px solid var(--amber)}
+.sum{display:grid;gap:6px;margin:12px 0;font-size:14px}
+.sum div{padding:8px 10px;border-radius:10px;background:var(--card2)}
+.acts{display:grid;gap:8px;grid-template-columns:1fr;margin-top:12px}
+@media (min-width:520px){.acts{grid-template-columns:2fr 1fr 1fr}}
+.acts .btn{min-height:54px;font-size:16px}
+.field{display:grid;gap:4px;margin-bottom:10px}
+.field label{font-size:13px;color:var(--muted)}
+.field input{width:100%}
+.foot{font-size:12px;color:var(--muted);text-align:center}
+.stale{color:var(--amber);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <h1>NVDA Review-Now Dashboard</h1>
+    <div class="sub" id="statusline">Starting…</div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn" data-act="refresh">Refresh</button>
+    <button class="btn" data-act="testconn">Test connections</button>
+    <button class="btn" data-act="sound" id="soundbtn">Sound: off</button>
+    <button class="btn" data-act="settings">Settings &amp; keys</button>
+  </div>
+</header>
+
+<section id="signal" class="watch" aria-live="polite">
+  <div>
+    <div class="state" id="sigstate">WATCH</div>
+    <div class="sub" id="sigsub">No tranche is ready for review.</div>
+  </div>
+  <div id="sigpills" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+</section>
+
+<section class="card" id="nvda"></section>
+
+<section class="grid3" id="tranches"></section>
+
+<section class="card" id="stops"></section>
+
+<section class="grid2">
+  <div class="card" id="panel-linked"></div>
+  <div class="card" id="panel-comp"></div>
+</section>
+
+<section class="grid2">
+  <div class="card news" id="news"></div>
+  <div style="display:grid;gap:14px;align-content:start">
+    <div class="card" id="sources"></div>
+    <div class="card news" id="filings"></div>
+    <div class="card" id="facts"></div>
+  </div>
+</section>
+
+<section class="card log" id="log"></section>
+
+<div class="foot">This page watches data and prompts a review. It does not place trades and is not financial advice. Keyless feeds can be delayed or blocked: confirm the price with your broker before acting.</div>
+</div>
+
+<div class="ov" id="ov-review"><div class="modal" id="review" role="dialog" aria-modal="true"></div></div>
+<div class="ov" id="ov-settings"><div class="modal" id="settings" role="dialog" aria-modal="true"></div></div>
+<div class="ov" id="ov-hint"><div class="modal" id="hintbox" role="dialog" aria-modal="true"></div></div>
+
+<script>
+"use strict";
+/* ============ configuration ============ */
+const LS_KEY = 'nvda-review-dash-v1';
+const EARN_TS = Date.parse('2026-11-17T21:20:00Z');      // results ~4:20 PM ET Nov 17
+const BRIEF_TS = Date.parse('2026-11-18T23:59:00-05:00'); // lawmakers' briefing deadline
+const DEFAULTS = {
+  keys:{finnhub:'',twelve:'',alpha:'',fmp:'',newsapi:''},
+  proxy:'', poll:60, sound:false,
+  tickers:[{s:'CRWV',g:'linked'},{s:'MU',g:'linked'},{s:'SMCI',g:'linked'},{s:'TSM',g:'linked'},
+           {s:'AMD',g:'comp'},{s:'AVGO',g:'comp'},{s:'INTC',g:'comp'}],
+  levels:{flush:145,band:3,l1:null,l2:null,pre:186.64,eps:2.47},
+  amounts:{t1:3000,t2:4000,t3:3000},
+  manual:{board:false,interim:false,earnMet:false,guideHeld:false,cleanPolicy:false,
+          hsExport:false,hsCompromise:false,hsNoSuccessor:false},
+  tranche:{t1:'open',t2:'open',t3:'open'},
+  snooze:{t1:0,t2:0,t3:0},
+  log:[]
+};
+const SEED = {NVDA:{price:173.73,prevClose:168.89,ext:160.31,low:null,high:null,volume:null,
+  ts:Date.parse('2026-11-11T21:00:00Z'),src:'Seed (Nov 11 close / after-hours)',seed:true,fetchedAt:0}};
+
+/* ============ state ============ */
+let S = loadState();
+const Q = Object.assign({}, SEED);   // quotes by symbol
+let NEWS = [];                        // {title,url,src,ts}
+const PST = {};                       // provider status
+let lastQuoteRun = 0, lastNewsRun = 0, lastAlpha = 0, alphaCheck = null, busy = false;
+let prevTrState = {}, prevStand = false, openTranche = null, audioCtx = null, proxyIdx = 0, titleTimer = null;
+
+function clone(o){return JSON.parse(JSON.stringify(o));}
+function loadState(){
+  const d = clone(DEFAULTS);
+  try{
+    const s = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
+    if(s && typeof s === 'object'){
+      for(const k of Object.keys(d)){
+        if(s[k] === undefined) continue;
+        if(Array.isArray(d[k]) || typeof d[k] !== 'object' || d[k] === null) d[k] = s[k];
+        else d[k] = Object.assign(d[k], s[k]);
+      }
+    }
+  }catch(e){}
+  return d;
+}
+function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){} }
+
+/* ============ helpers ============ */
+const $ = id => document.getElementById(id);
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function num(v){const n=parseFloat(v);return isFinite(n)?n:null;}
+function fmt(n,d){d=d==null?2:d;return n==null||!isFinite(n)?'—':Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function pct(n){return n==null||!isFinite(n)?'—':(n>0?'+':'')+n.toFixed(2)+'%';}
+function cls(n){return n==null?'':(n>=0?'up':'down');}
+function tstr(ts){return ts?new Date(ts).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):'—';}
+function dstr(ts){return ts?new Date(ts).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'—';}
+function ago(ts){if(!ts)return 'never';const s=Math.max(0,Math.round((Date.now()-ts)/1000));if(s<90)return s+'s ago';if(s<5400)return Math.round(s/60)+'m ago';if(s<172800)return Math.round(s/3600)+'h ago';return Math.round(s/86400)+'d ago';}
+function latest(q){return q?(q.ext!=null?q.ext:q.price):null;}
+function dayPct(q){const p=latest(q);return q&&p!=null&&q.prevClose?((p/q.prevClose-1)*100):null;}
+function fresh(q){return !!(q&&!q.seed&&q.fetchedAt&&Date.now()-q.fetchedAt<180000);}
+
+/* ============ network ============ */
+async function fetchText(url, ms){
+  const ctl = new AbortController(); const t = setTimeout(()=>ctl.abort(), ms||7000);
+  try{
+    const r = await fetch(url,{signal:ctl.signal,cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return await r.text();
+  } finally { clearTimeout(t); }
+}
+async function fetchJSON(url, ms){ return JSON.parse(await fetchText(url, ms)); }
+function proxyList(){
+  const list = [
+    u=>'https://corsproxy.io/?url='+encodeURIComponent(u),
+    u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u),
+    u=>'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(u)
+  ];
+  if(S.proxy && /^https?:\/\//.test(S.proxy)) list.unshift(u=>S.proxy+encodeURIComponent(u));
+  return list;
+}
+async function viaProxy(url){
+  const list = proxyList(); let err;
+  for(let i=0;i<list.length;i++){
+    const k = (proxyIdx+i) % list.length;
+    try{ const t = await fetchText(list[k](url), 7000); if(!t || t.length<20) throw new Error('empty'); proxyIdx = k; return t; }
+    catch(e){ err = e; }
+  }
+  throw new Error('all proxies failed'+(err?' ('+err.message+')':''));
+}
+
+const directBad = {};
+// Try the site directly first (works where the site allows it), then fall back to the public proxies.
+async function smartFetch(url){
+  const host = url.split('/')[2], now = Date.now();
+  if(!directBad[host] || directBad[host] < now){
+    try{ const t = await fetchText(url, 6000); if(t && t.length>20) return t; throw new Error('empty'); }
+    catch(e){ directBad[host] = now + 30*60000; }
+  }
+  return viaProxy(url);
+}
+
+/* ============ quote providers (plug-in modules) ============ */
+const PROV = {
+  finnhub:{name:'Finnhub',key:'finnhub',gap:0,note:'Real-time US quotes + company news. Free key: finnhub.io',
+    async quote(sym){
+      const j = await fetchJSON('https://finnhub.io/api/v1/quote?symbol='+encodeURIComponent(sym)+'&token='+encodeURIComponent(S.keys.finnhub));
+      if(!j || !j.c) throw new Error(j&&j.error||'no data');
+      return {price:j.c,prevClose:j.pc||null,low:j.l||null,high:j.h||null,volume:null,ts:(j.t||0)*1000};
+    }},
+  twelve:{name:'Twelve Data',key:'twelve',gap:300,note:'Backup quotes (800 calls/day free). twelvedata.com',
+    async quote(sym){
+      const j = await fetchJSON('https://api.twelvedata.com/quote?symbol='+encodeURIComponent(sym)+'&apikey='+encodeURIComponent(S.keys.twelve));
+      if(!j || j.status==='error' || j.close==null) throw new Error(j&&j.message||'no data');
+      return {price:num(j.close),prevClose:num(j.previous_close),low:num(j.low),high:num(j.high),volume:num(j.volume),ts:(j.timestamp||0)*1000};
+    }},
+  fmp:{name:'Financial Modeling Prep',key:'fmp',gap:600,note:'Backup quotes (250 calls/day free). financialmodelingprep.com',
+    async quote(sym){
+      const j = await fetchJSON('https://financialmodelingprep.com/stable/quote?symbol='+encodeURIComponent(sym)+'&apikey='+encodeURIComponent(S.keys.fmp));
+      const r = Array.isArray(j)?j[0]:null;
+      if(!r || r.price==null) throw new Error((j&&(j['Error Message']||j.message))||'no data');
+      return {price:num(r.price),prevClose:num(r.previousClose),low:num(r.dayLow),high:num(r.dayHigh),volume:num(r.volume),ts:(r.timestamp||0)*1000};
+    }},
+  yahoo:{name:'Yahoo Finance (keyless)',keyless:true,gap:0,note:'No key. Includes pre/after-hours. Can be delayed or blocked.',
+    async quote(sym){ return parseYahoo(JSON.parse(await smartFetch('https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(sym)+'?interval=1m&range=1d&includePrePost=true'))); }},
+  nasdaq:{name:'Nasdaq.com (keyless)',keyless:true,gap:0,note:'No key. Exchange site quote, includes after-hours.',
+    async quote(sym){
+      const j = JSON.parse(await smartFetch('https://api.nasdaq.com/api/quote/'+encodeURIComponent(sym)+'/info?assetclass=stocks'));
+      const d = j && j.data; if(!d || !d.primaryData) throw new Error('no data');
+      const n = v=>num(String(v==null?'':v).replace(/[$,%+\s]/g,''));
+      const a = d.primaryData, b = d.secondaryData, pa = n(a.lastSalePrice); if(pa==null) throw new Error('no price');
+      const out = {low:null,high:null,volume:n(a.volume),ts:Date.now()};
+      const pb = b ? n(b.lastSalePrice) : null;
+      if(pb!=null){ out.price = pb; out.prevClose = n(b.netChange)!=null ? pb-n(b.netChange) : null; out.ext = pa; out.extTs = Date.now(); }
+      else { out.price = pa; out.prevClose = n(a.netChange)!=null ? pa-n(a.netChange) : null; }
+      return out;
+    }},
+  stooq:{name:'Stooq (keyless)',keyless:true,gap:0,note:'No key. Delayed last-resort quote.',
+    async quote(sym){
+      const t = await smartFetch('https://stooq.com/q/l/?s='+encodeURIComponent(sym.toLowerCase())+'.us&f=sd2t2ohlcv&h&e=csv');
+      const row = t.trim().split(/\r?\n/)[1]; if(!row) throw new Error('no data');
+      const c = row.split(','); const price = num(c[6]); if(price==null) throw new Error('no data');
+      return {price:price,prevClose:null,low:num(c[5]),high:num(c[4]),volume:num(c[7]),ts:Date.parse(c[1]+'T'+c[2]+'Z')||Date.now()};
+    }}
+};
+const ORDER = ['finnhub','twelve','fmp','yahoo','nasdaq','stooq'];
+function parseYahoo(j){
+  const r = j && j.chart && j.chart.result && j.chart.result[0]; if(!r || !r.meta) throw new Error('no data');
+  const m = r.meta, out = {price:num(m.regularMarketPrice),prevClose:num(m.previousClose!=null?m.previousClose:m.chartPreviousClose),
+    low:num(m.regularMarketDayLow),high:num(m.regularMarketDayHigh),volume:num(m.regularMarketVolume),ts:(m.regularMarketTime||0)*1000};
+  if(out.price==null) throw new Error('no price');
+  const tsArr = r.timestamp||[], cl = (r.indicators&&r.indicators.quote&&r.indicators.quote[0]&&r.indicators.quote[0].close)||[];
+  for(let i=cl.length-1;i>=0;i--){ if(cl[i]!=null){ const t=tsArr[i]*1000; if(t>out.ts+90000){out.ext=num(cl[i]);out.extTs=t;} break; } }
+  return out;
+}
+function pst(id){ return PST[id] || (PST[id] = {state:'idle',msg:'',fails:0,cool:0,lastOk:0,use:{}}); }
+function enabled(id){ const p = PROV[id]; return p.keyless || !!S.keys[p.key]; }
+
+async function getQuote(sym){
+  for(const id of ORDER){
+    const p = PROV[id], st = pst(id), now = Date.now();
+    if(!enabled(id)){ st.state='key'; st.msg='Needs key'; continue; }
+    if(st.cool > now) continue;
+    if(p.gap && Q[sym] && !Q[sym].seed && st.use[sym] && now - st.use[sym] < p.gap*1000) continue;
+    try{
+      st.use[sym] = now;
+      const q = await p.quote(sym);
+      st.state='live'; st.msg=''; st.fails=0; st.lastOk=Date.now();
+      q.src = p.name; q.fetchedAt = Date.now();
+      return q;
+    }catch(e){
+      st.fails++; st.msg = (e&&e.message)||'error';
+      if(st.fails>=3){ st.state='err'; st.cool = Date.now()+5*60000; st.fails=0; }
+    }
+  }
+  return null;
+}
+async function refreshQuotes(){
+  if(busy) return; busy = true; lastQuoteRun = Date.now();
+  try{
+    const syms = ['NVDA'].concat(S.tickers.map(t=>t.s));
+    await Promise.all(syms.map(async s=>{
+      const q = await getQuote(s);
+      if(q){
+        // keep an after-hours print from Yahoo when the primary source has none
+        if(q.ext==null && Q[s] && Q[s].extTs && Q[s].extTs > q.ts && Date.now()-Q[s].extTs < 20*3600000){ q.ext=Q[s].ext; q.extTs=Q[s].extTs; }
+        Q[s] = q;
+      }
+    }));
+    // supplementary: extended-hours NVDA from Yahoo when a keyed source is primary
+    if(Q.NVDA && !Q.NVDA.seed && Q.NVDA.src !== PROV.yahoo.name && pst('yahoo').cool < Date.now()){
+      try{ const y = await PROV.yahoo.quote('NVDA'); if(y.ext!=null){ Q.NVDA.ext=y.ext; Q.NVDA.extTs=y.extTs; } pst('yahoo').state='live'; pst('yahoo').lastOk=Date.now(); }catch(e){}
+    }
+    // Alpha Vantage: hourly NVDA cross-check only (25 calls/day free)
+    if(S.keys.alpha && Date.now()-lastAlpha > 3600000){
+      lastAlpha = Date.now(); const st = pst('alpha');
+      try{
+        const j = await fetchJSON('https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=NVDA&apikey='+encodeURIComponent(S.keys.alpha));
+        const g = j && j['Global Quote']; const p = g && num(g['05. price']);
+        if(p==null) throw new Error((j&&(j.Note||j.Information))?'rate limited':'no data');
+        alphaCheck = {price:p,ts:Date.now()}; st.state='live'; st.msg=''; st.lastOk=Date.now();
+      }catch(e){ st.state='err'; st.msg=e.message; }
+    }
+  } finally { busy = false; render(); }
+}
+
+/* ============ news ============ */
+const KW = {
+  board:/\b(item 5\.02|oust\w*|fired|fires|removed?|removal|steps? down|stepping down|resign\w*|terminat\w+|dismiss\w*)\b/i,
+  interim:/\b(interim|successor|new ceo|names? \w+ (as )?ceo|appoint\w+|replac\w+)\b/i,
+  earnMet:/\b(earnings|results|revenue|beats?|miss(es|ed)?|guidance|outlook|forecast)\b/i,
+  cleanPolicy:/\b(briefing|congress|lawmakers|senate|house panel|cleared|no (new )?restrictions)\b/i,
+  hsExport:/\b(export (control|curb|restriction|ban|rule)s?|commerce (department|dept\.?)|entity list|licen[cs]\w+|chip ban)\b/i,
+  hsCompromise:/\b(compromised|classified|indict\w+|charged|subpoena\w*|secrets?|doj|fbi|espionage charge)\b/i,
+  hsNoSuccessor:/\b(no successor|without (a )?successor|search for (a )?(new )?ceo|ceo search)\b/i
+};
+KW.guideHeld = KW.earnMet;
+function hits(k){ const cut = Date.now()-36*3600000; return NEWS.filter(n=>n.ts>=cut && KW[k] && KW[k].test(n.title)); }
+function parseRSS(xml, label){
+  const doc = new DOMParser().parseFromString(xml,'text/xml'); const out = [];
+  doc.querySelectorAll('item').forEach(it=>{
+    const g = t=>{const e=it.querySelector(t);return e?e.textContent.trim():'';};
+    const title = g('title'); if(!title) return;
+    out.push({title:title,url:g('link'),src:g('source')||label,ts:Date.parse(g('pubDate'))||Date.now()});
+  });
+  return out;
+}
+const SEC_CIK = '0001045810';
+const SEC = {filings:[],facts:{},factsLast:0};
+const ITEMS = {'5.02':'officer or director departure or appointment','2.02':'results of operations (earnings)','8.01':'other events','7.01':'Reg FD disclosure','1.01':'material agreement','5.07':'shareholder vote','9.01':'exhibits'};
+async function refreshSEC(all){
+  const st = pst('sec');
+  try{
+    const j = JSON.parse(await smartFetch('https://data.sec.gov/submissions/CIK'+SEC_CIK+'.json'));
+    const r = j.filings.recent, out = [];
+    for(let i=0;i<r.form.length && out.length<12;i++){
+      if(!/^(8-K|10-Q|10-K)/.test(r.form[i])) continue;
+      const ts = Date.parse((r.acceptanceDateTime&&r.acceptanceDateTime[i])||r.filingDate[i]);
+      if(!ts || Date.now()-ts > 45*86400000) continue;
+      out.push({form:r.form[i],items:String((r.items&&r.items[i])||'').split(',').filter(Boolean),ts:ts,
+        url:'https://www.sec.gov/Archives/edgar/data/1045810/'+r.accessionNumber[i].replace(/-/g,'')+'/'+r.primaryDocument[i]});
+    }
+    SEC.filings = out; st.state='live'; st.msg=''; st.lastOk=Date.now();
+    out.filter(f=>f.form.indexOf('8-K')===0).forEach(f=>all.push({title:'SEC '+f.form+' filed by Nvidia: '+(f.items.map(i=>'Item '+i+(ITEMS[i]?' ('+ITEMS[i]+')':'')).join('; ')||'items not listed'),url:f.url,src:'SEC EDGAR',ts:f.ts}));
+  }catch(e){ st.state='err'; st.msg=e.message; }
+  if(Date.now()-SEC.factsLast > 3600000){
+    SEC.factsLast = Date.now();
+    for(const [k,tag,unit] of [['rev','Revenues','USD'],['ni','NetIncomeLoss','USD'],['eps','EarningsPerShareDiluted','USD/shares']]){
+      try{
+        const j = JSON.parse(await smartFetch('https://data.sec.gov/api/xbrl/companyconcept/CIK'+SEC_CIK+'/us-gaap/'+tag+'.json'));
+        const days = x=>(Date.parse(x.end)-Date.parse(x.start))/86400000;
+        const a = ((j.units&&j.units[unit])||[]).filter(x=>x.start&&x.end&&days(x)>80&&days(x)<100);
+        a.sort((x,y)=>Date.parse(y.end)-Date.parse(x.end) || Date.parse(y.filed)-Date.parse(x.filed));
+        if(a[0]) SEC.facts[k] = {val:a[0].val,end:a[0].end};
+      }catch(e){}
+    }
+  }
+}
+async function refreshNews(){
+  lastNewsRun = Date.now(); const all = [];
+  const jobs = [];
+  for(const [q,label] of [['Nvidia Jensen Huang board CEO','Google News'],['Nvidia export controls Commerce chips','Google News']]){
+    jobs.push((async()=>{ const st = pst('gnews');
+      try{ const x = await smartFetch('https://news.google.com/rss/search?q='+encodeURIComponent(q+' when:2d')+'&hl=en-US&gl=US&ceid=US:en'); all.push(...parseRSS(x,label)); st.state='live'; st.msg=''; st.lastOk=Date.now(); }
+      catch(e){ if(st.state!=='live'||Date.now()-st.lastOk>600000){st.state='err';st.msg=e.message;} } })());
+  }
+  for(const [url,label,id,filt] of [['https://nvidianews.nvidia.com/releases.xml','Nvidia Newsroom','nvnews',null],
+      ['https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=19854910','CNBC','cnbc',/nvidia|huang/i]]){
+    jobs.push((async()=>{ const st = pst(id);
+      try{ const items = parseRSS(await smartFetch(url),label).filter(n=>!filt||filt.test(n.title)); items.forEach(n=>{n.src=label;}); all.push(...items); st.state='live'; st.msg=''; st.lastOk=Date.now(); }
+      catch(e){ st.state='err'; st.msg=e.message; } })());
+  }
+  jobs.push(refreshSEC(all));
+  if(S.keys.finnhub) jobs.push((async()=>{
+    try{ const d = t=>new Date(t).toISOString().slice(0,10);
+      const j = await fetchJSON('https://finnhub.io/api/v1/company-news?symbol=NVDA&from='+d(Date.now()-3*86400000)+'&to='+d(Date.now()+86400000)+'&token='+encodeURIComponent(S.keys.finnhub));
+      if(Array.isArray(j)) j.slice(0,60).forEach(n=>all.push({title:n.headline,url:n.url,src:n.source||'Finnhub',ts:(n.datetime||0)*1000}));
+    }catch(e){} })());
+  const ns = pst('newsapi');
+  if(S.keys.newsapi) jobs.push((async()=>{
+    try{ const j = await fetchJSON('https://newsapi.org/v2/everything?q='+encodeURIComponent('Nvidia AND (Huang OR board OR "export controls")')+'&language=en&sortBy=publishedAt&pageSize=30&apiKey='+encodeURIComponent(S.keys.newsapi));
+      if(j.status!=='ok') throw new Error(j.message||'error');
+      j.articles.forEach(a=>all.push({title:a.title,url:a.url,src:(a.source&&a.source.name)||'NewsAPI',ts:Date.parse(a.publishedAt)||Date.now()}));
+      ns.state='live'; ns.msg=''; ns.lastOk=Date.now();
+    }catch(e){ ns.state='err'; ns.msg=e.message+' (free NewsAPI keys only work from localhost)'; } })());
+  else { ns.state='key'; ns.msg='Needs key'; }
+  await Promise.all(jobs);
+  if(all.length){
+    const seen = new Set(); const merged = all.concat(NEWS).filter(n=>{const k=(n.title||'').toLowerCase().slice(0,70); if(!n.title||seen.has(k)) return false; seen.add(k); return true;});
+    merged.sort((a,b)=>b.ts-a.ts); NEWS = merged.slice(0,80);
+  }
+  render();
+}
+
+/* ============ signal engine ============ */
+function zoneTop(){ return S.levels.flush*(1+S.levels.band/100); }
+function hardStops(){
+  const p = latest(Q.NVDA), L = S.levels, M = S.manual;
+  const belowL1 = L.l1!=null && p!=null && p < L.l1;
+  return [
+    {id:'hsExport',label:'Export controls widened beyond China (third-country routes such as Singapore), or new Commerce action against Nvidia',on:M.hsExport,active:M.hsExport},
+    {id:'hsCompromise',label:'Evidence that technology or secrets were compromised',on:M.hsCompromise,active:M.hsCompromise},
+    {id:'hsNoSuccessor',label:'Huang out with no named successor, and price making new lows',on:M.hsNoSuccessor,active:M.hsNoSuccessor && belowL1,
+      note:M.hsNoSuccessor ? (L.l1==null?'Set the decision-day low in Tranche 1 to arm this.':(belowL1?'Price is below the decision-day low.':'Armed: price is still above the decision-day low.')) : ''}
+  ];
+}
+function tranches(){
+  const q = Q.NVDA, p = latest(q), f = fresh(q), L = S.levels, M = S.manual, zt = zoneTop();
+  const intact = M.earnMet && M.guideHeld && Date.now()>=EARN_TS, inZone = f && p!=null && p<=zt;
+  return [
+    {id:'t1',title:'Tranche 1',amt:S.amounts.t1,what:'After the board decision',mode:'all',level:'l1',levelName:'decision-day low (hard stop only)',conds:[
+      {man:'board',label:'Board decision is public and confirmed',ok:M.board},
+      {man:'interim',label:'Interim CEO or successor named, Huang\u2019s role clear',ok:M.interim}]},
+    {id:'t2',title:'Tranche 2',amt:S.amounts.t2,what:'After Nov 17 earnings',mode:'all',conds:[
+      {auto:true,label:'Earnings are out (Nov 17, after the close)',ok:Date.now()>=EARN_TS,note:Date.now()>=EARN_TS?'':'In '+countdown(EARN_TS)},
+      {man:'earnMet',label:'Revenue at or above $108.8B and EPS at or above $2.47',ok:M.earnMet},
+      {man:'guideHeld',label:'Next-quarter guide not cut, apart from the known Q4 margin dip',ok:M.guideHeld}]},
+    {id:'t3',title:'Tranche 3',amt:S.amounts.t3,what:'Reserve: needs intact earnings plus a flush or a clean policy outcome',mode:'custom',
+      pass:intact && (inZone || M.cleanPolicy), near:(inZone || M.cleanPolicy || intact),conds:[
+      {auto:true,label:'Earnings out and intact (both Tranche 2 earnings checks are Yes)',ok:intact,note:'Past drops this deep kept falling when the business was not intact.'},
+      {auto:true,label:'Either: price in the flush zone (at or below $'+fmt(zt)+')',ok:inZone,note:!f?'Price feed is stale: cannot confirm.':'Now $'+fmt(p)+' \u00b7 zone centre $'+fmt(L.flush)},
+      {man:'cleanPolicy',label:'Or: clean Congress/Commerce outcome, no new restrictions',ok:M.cleanPolicy}]}
+  ].map(t=>{
+    const met = t.conds.filter(c=>c.ok).length, n = t.conds.length; let st;
+    if(S.tranche[t.id]!=='open') st = S.tranche[t.id];
+    else if(t.mode==='all') st = met===n?'review':(met===n-1?'ready':'watch');
+    else st = t.pass?'review':(t.near?'ready':'watch');
+    t.state = st; t.met = met; return t;
+  });
+}
+function countdown(ts){ const s=Math.max(0,ts-Date.now()); const d=Math.floor(s/86400000), h=Math.floor(s%86400000/3600000), m=Math.floor(s%3600000/60000); return (d?d+'d ':'')+h+'h '+m+'m'; }
+function summaryLines(t){
+  const q = Q.NVDA, p = latest(q), L = S.levels, annual = L.eps*4;
+  const grp = g=>{ const v = S.tickers.filter(x=>x.g===g).map(x=>dayPct(Q[x.s])).filter(x=>x!=null); return v.length?v.reduce((a,b)=>a+b,0)/v.length:null; };
+  return [
+    '<b>Valuation:</b> $'+fmt(p)+' is about '+(p&&annual?fmt(p/annual,1):'—')+'× annualized consensus EPS ($'+fmt(L.eps)+' × 4), '+(p&&L.pre?pct((p/L.pre-1)*100):'—')+' vs the pre-admission close.',
+    '<b>Momentum:</b> NVDA '+pct(dayPct(q))+' vs prior close · linked group avg '+pct(grp('linked'))+' · competitors avg '+pct(grp('comp'))+'.',
+    '<b>Risk:</b> $'+fmt(t.amt,0)+' at stake. A further 25% drop would cost $'+fmt(t.amt*0.25,0)+'. Volatility stays high after forced CEO exits.'
+  ];
+}
+
+/* ============ alerts ============ */
+function beep(){ if(!S.sound||!audioCtx) return; try{ [0,0.25,0.5].forEach(d=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=880;o.connect(g);g.connect(audioCtx.destination);g.gain.setValueAtTime(0.2,audioCtx.currentTime+d);g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+d+0.18);o.start(audioCtx.currentTime+d);o.stop(audioCtx.currentTime+d+0.2);}); }catch(e){} }
+function flashTitle(on, txt){ clearInterval(titleTimer); document.title='NVDA Review-Now Dashboard'; if(!on) return; let f=false; titleTimer=setInterval(()=>{document.title=(f=!f)?'● '+txt:'NVDA Review-Now Dashboard';},900); }
+function checkAlerts(trs, stand){
+  const now = Date.now();
+  if(stand && !prevStand) beep();
+  prevStand = stand;
+  for(const t of trs){
+    const was = prevTrState[t.id]; prevTrState[t.id] = t.state;
+    if(t.state==='review' && !stand && (S.snooze[t.id]||0) < now && !openTranche){
+      if(was!=='review' || true){ openReview(t.id, false); beep(); break; }
+    }
+  }
+  flashTitle(!stand && trs.some(t=>t.state==='review'), 'REVIEW NOW');
+}
+
+/* ============ rendering ============ */
+function render(){
+  const trs = tranches(), hs = hardStops(), stand = hs.some(h=>h.active), q = Q.NVDA, p = latest(q), f = fresh(q);
+  // status line
+  const srcs = ORDER.concat(['gnews','sec','nvnews','cnbc']).filter(id=>PST[id]&&PST[id].state==='live').length;
+  const blocked = q.seed && lastQuoteRun && !busy && srcs===0;
+  $('statusline').innerHTML = (navigator.onLine===false?'<span class="stale">Offline.</span> ':'')+(blocked?'<span class="stale">No feed could connect. An in-app file preview blocks network access: open this in Safari or Chrome. Tap Test connections for details.</span><br>':'')+
+    'NVDA quote: '+esc(q.src||'—')+' · '+(q.seed?'<span class="stale">not live yet</span>':'fetched '+ago(q.fetchedAt)+(f?'':' <span class="stale">(stale)</span>'))+
+    ' · next refresh in '+Math.max(0,Math.round((lastQuoteRun+S.poll*1000-Date.now())/1000))+'s · '+srcs+' source'+(srcs===1?'':'s')+' live';
+  // signal bar
+  const any = s=>trs.some(t=>t.state===s);
+  const state = stand?'stand':any('review')?'review':any('ready')?'ready':'watch';
+  $('signal').className = state;
+  $('sigstate').textContent = {stand:'STAND DOWN',review:'REVIEW NOW',ready:'READY',watch:'WATCH'}[state];
+  $('sigsub').textContent = {
+    stand:'A hard stop is active. Do not add until it clears.',
+    review:'Signals lined up. Open the review and decide.',
+    ready:'One condition away on at least one tranche.',
+    watch:'No tranche is ready for review.'}[state];
+  $('sigpills').innerHTML = trs.map(t=>'<button class="pill '+pillCls(t.state)+'" data-act="review" data-t="'+t.id+'" style="min-height:36px;cursor:pointer">'+t.title+' $'+fmt(t.amt,0)+': '+stLabel(t.state)+'</button>').join('');
+
+  renderNvda(q,p,f); renderTranches(trs, stand); renderStops(hs);
+  renderPanel('linked','Moves with Nvidia','Suppliers, partners and customers tied to Nvidia demand.');
+  renderPanel('comp','Competitors','Names that tend to gain when money rotates out of Nvidia.');
+  renderNews(); renderSources(); renderFilings(); renderFacts(); renderLog();
+  if(openTranche) drawReview(openTranche.id, openTranche.test);
+  checkAlerts(trs, stand);
+}
+function pillCls(s){return {review:'g',ready:'a',watch:'',done:'b',skipped:''}[s]||'';}
+function stLabel(s){return {review:'REVIEW',ready:'ready',watch:'watch',done:'done',skipped:'skipped'}[s]||s;}
+
+function renderNvda(q,p,f){
+  const L = S.levels, dp = dayPct(q), zt = zoneTop();
+  const pts = [L.flush*(1-L.band/100), zt, L.l1, L.l2, L.pre, p].filter(v=>v!=null);
+  const lo = Math.min.apply(null,pts)*0.97, hi = Math.max.apply(null,pts)*1.03, x = v=>((v-lo)/(hi-lo)*100).toFixed(2)+'%';
+  const mk = (v,l,c)=>v==null?'':'<div class="mk '+(c||'')+'" style="left:'+x(v)+'"><b>'+l+'</b></div>';
+  $('nvda').innerHTML =
+    '<div class="thead"><h2 style="margin:0">Nvidia (NVDA)</h2><span class="pill '+(f?'g':'a')+'">'+(q.seed?'Seed data, not live':(f?'Fresh':'Stale: verify'))+'</span></div>'+
+    '<div style="display:flex;gap:16px;align-items:baseline;flex-wrap:wrap"><div class="big num">$'+fmt(p)+'</div>'+
+    '<div class="num '+cls(dp)+'" style="font-size:20px;font-weight:700">'+pct(dp)+' <span class="sub">vs prior close</span></div></div>'+
+    (q.ext!=null?'<div class="sub">Extended-hours print $'+fmt(q.ext)+(q.extTs?' at '+tstr(q.extTs):'')+' · regular session $'+fmt(q.price)+'</div>':'')+
+    '<div class="kv num"><div><span>Prior close</span>$'+fmt(q.prevClose)+'</div><div><span>Day low</span>$'+fmt(q.low)+'</div><div><span>Volume</span>'+(q.volume?fmt(q.volume/1e6,1)+'M':'—')+'</div><div><span>vs pre-admission close</span>'+(p&&L.pre?pct((p/L.pre-1)*100):'—')+'</div></div>'+
+    '<div class="ladder"><div class="track"></div><div class="zone" style="left:'+x(L.flush*(1-L.band/100))+';width:calc('+x(zt)+' - '+x(L.flush*(1-L.band/100))+')"></div>'+
+      mk(L.flush,'Flush $'+fmt(L.flush,0))+mk(L.l1,'Decision low')+mk(L.pre,'Pre $'+fmt(L.pre,0))+mk(p,'$'+fmt(p),'price')+'</div>'+
+    (alphaCheck?'<div class="sub">Alpha Vantage cross-check: $'+fmt(alphaCheck.price)+' ('+ago(alphaCheck.ts)+')</div>':'');
+}
+function condHTML(c, stop){
+  const h = c.man ? hits(c.man) : [];
+  return '<li><div class="mark '+(c.ok?'ok':'no')+'">'+(c.ok?'✓':'✕')+'</div><div class="body">'+esc(c.label)+
+    (c.note?'<div class="note">'+esc(c.note)+'</div>':'')+
+    (c.auto?'<div class="note">Automatic</div>':'')+
+    (h.length?'<div><span class="hint" data-act="hint" data-k="'+c.man+'">'+h.length+' recent headline'+(h.length===1?'':'s')+' may relate. Tap to read.</span></div>':'')+
+    '</div>'+(c.man?'<button class="btn sm tog '+(stop?'stop ':'')+(S.manual[c.man]?'on':'')+'" data-act="toggle" data-k="'+c.man+'">'+(S.manual[c.man]?'Yes':'No')+'</button>':'')+'</li>';
+}
+function renderTranches(trs, stand){
+  $('tranches').innerHTML = trs.map(t=>{
+    const closed = t.state==='done'||t.state==='skipped';
+    return '<div class="card"><div class="thead"><div><strong>'+t.title+' · $'+fmt(t.amt,0)+'</strong><div class="sub">'+esc(t.what)+''+'</div></div><span class="pill '+pillCls(t.state)+'">'+stLabel(t.state)+'</span></div>'+
+      '<ul class="chk">'+t.conds.map(c=>condHTML(c)).join('')+'</ul>'+
+      (t.level?'<div class="lvl"><label class="sub" for="lv-'+t.level+'">'+t.levelName+' $</label><input id="lv-'+t.level+'" inputmode="decimal" data-level="'+t.level+'" value="'+(S.levels[t.level]!=null?S.levels[t.level]:'')+'" placeholder="set"><button class="btn sm" data-act="uselow" data-level="'+t.level+'">Use today’s low</button></div>':
+        '<div class="lvl"><label class="sub" for="lv-flush">Flush level $</label><input id="lv-flush" inputmode="decimal" data-level="flush" value="'+S.levels.flush+'"></div>')+
+      '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">'+
+        (closed?'<button class="btn sm" data-act="reopen" data-t="'+t.id+'">Reopen</button>':'<button class="btn sm '+(t.state==='review'&&!stand?'primary':'')+'" data-act="review" data-t="'+t.id+'">Open review</button>')+
+      '</div></div>';
+  }).join('');
+}
+function renderStops(hs){
+  const act = hs.some(h=>h.active);
+  $('stops').innerHTML = '<div class="thead"><h2 style="margin:0">Hard stops</h2><span class="pill '+(act?'r':'g')+'">'+(act?'ACTIVE: stand down':'None active')+'</span></div>'+
+    '<div class="sub" style="margin-bottom:8px">Any one of these overrides every buy signal. Flip to Yes only when you have confirmed it.</div>'+
+    '<ul class="chk">'+hs.map(h=>{
+      const hh = hits(h.id);
+      return '<li><div class="mark '+(h.active?'no':(h.on?'na':'ok'))+'">'+(h.active?'!':'✓')+'</div><div class="body">'+esc(h.label)+(h.note?'<div class="note">'+esc(h.note)+'</div>':'')+
+        (hh.length?'<div><span class="hint" data-act="hint" data-k="'+h.id+'">'+hh.length+' recent headline'+(hh.length===1?'':'s')+' may relate. Tap to read.</span></div>':'')+
+        '</div><button class="btn sm tog stop '+(h.on?'on':'')+'" data-act="toggle" data-k="'+h.id+'">'+(h.on?'Yes':'No')+'</button></li>';
+    }).join('')+'</ul>';
+}
+function renderPanel(g, title, blurb){
+  const nv = dayPct(Q.NVDA), rows = S.tickers.filter(t=>t.g===g);
+  $('panel-'+g).innerHTML = '<h2>'+title+'</h2><div class="sub" style="margin-bottom:6px">'+blurb+'</div>'+
+    '<div class="trow thd"><div>Ticker</div><div>Price</div><div>Day</div><div>vs NVDA</div><div></div></div>'+
+    (rows.length?rows.map(t=>{
+      const q = Q[t.s], p = latest(q), d = dayPct(q), rel = (d!=null&&nv!=null)?d-nv:null; let tag = '';
+      if(d!=null && nv!=null){
+        const same = (d>=0)===(nv>=0);
+        tag = g==='linked' ? (same?'<span class="pill b tag">following</span>':'<span class="pill a tag">diverging</span>')
+                           : (same?'<span class="pill a tag">moving with NVDA</span>':'<span class="pill b tag">inverse</span>');
+      }
+      return '<div class="trow num"><div class="sym">'+esc(t.s)+'</div><div>'+(p!=null?'$'+fmt(p):'<span class="sub">waiting for feed</span>')+' '+tag+(q&&!fresh(q)?' <span class="sub">'+ago(q.fetchedAt)+'</span>':'')+'</div>'+
+        '<div class="'+cls(d)+'">'+pct(d)+'</div><div class="'+cls(rel)+'">'+(rel==null?'—':(rel>0?'+':'')+rel.toFixed(2)+' pts')+'</div>'+
+        '<div class="act"><button class="btn sm ghost" title="Move to the other panel" aria-label="Move '+esc(t.s)+' to the other panel" data-act="move" data-s="'+esc(t.s)+'">⇄</button><button class="btn sm ghost" aria-label="Remove '+esc(t.s)+'" data-act="remove" data-s="'+esc(t.s)+'">✕</button></div></div>';
+    }).join(''):'<div class="sub" style="padding:10px 0">No tickers here yet.</div>')+
+    '<div class="addrow"><input id="add-'+g+'" placeholder="Ticker" maxlength="8" autocapitalize="characters" autocomplete="off" autocorrect="off" aria-label="Ticker to add"><button class="btn" data-act="add" data-g="'+g+'">Add here</button></div>';
+}
+function renderNews(){
+  const flag = n=>Object.keys(KW).filter(k=>k!=='guideHeld'&&KW[k].test(n.title));
+  const names = {board:'board',interim:'successor',earnMet:'earnings',cleanPolicy:'policy',hsExport:'export controls',hsCompromise:'legal/security',hsNoSuccessor:'succession'};
+  $('news').innerHTML = '<div class="thead"><h2 style="margin:0">Headlines</h2><span class="sub">updated '+ago(lastNewsRun&&NEWS.length?lastNewsRun:0)+'</span></div>'+
+    (NEWS.length?'<ul>'+NEWS.slice(0,18).map(n=>{
+      const fl = flag(n);
+      return '<li><a href="'+esc(n.url)+'" target="_blank" rel="noopener noreferrer">'+esc(n.title)+'</a><div class="meta">'+esc(n.src)+' · '+ago(n.ts)+' '+fl.map(k=>'<span class="pill '+(k.indexOf('hs')===0?'r':'b')+'" style="font-size:11px;padding:1px 7px">'+names[k]+'</span>').join(' ')+'</div></li>';
+    }).join('')+'</ul>':'<div class="sub">No headlines loaded yet. The keyless news feed goes through a public proxy and may be blocked. A Finnhub key adds a direct feed.</div>')+
+    '<div class="sub" style="margin-top:8px">Keyword tags are hints, not confirmation. Read the story before flipping a checklist item.</div>';
+}
+function renderSources(){
+  const row = (id,name,note)=>{ const st = pst(id); const en = PROV[id] ? enabled(id) : ((id==='alpha'||id==='newsapi') ? !!S.keys[id] : true);
+    let c='',l='Idle'; if(!en){c='key';l='Needs key';} else if(st.state==='live'){c='live';l='Live · '+ago(st.lastOk);} else if(st.state==='err'){c='err';l='Error';} else if(st.fails){l='Retrying';} else if(st.state==='idle'){l='Standby';}
+    return '<div class="src"><span class="dot '+c+'"></span><div>'+esc(name)+'<div class="sub">'+esc(st.state==='err'&&st.msg?st.msg:note)+'</div></div><span class="sub">'+l+'</span></div>'; };
+  $('sources').innerHTML = '<div class="thead"><h2 style="margin:0">Data sources</h2><button class="btn sm" data-act="settings">Add keys</button></div>'+
+    ORDER.map(id=>row(id,PROV[id].name,PROV[id].note)).join('')+
+    row('alpha','Alpha Vantage','Hourly NVDA cross-check only (25 calls/day free). alphavantage.co')+
+    row('sec','SEC EDGAR (keyless)','Official 8-K filings and reported financials. Item 5.02 marks a CEO change.')+
+    row('nvnews','Nvidia Newsroom RSS (keyless)','Company press releases.')+
+    row('cnbc','CNBC Technology RSS (keyless)','Filtered to Nvidia headlines.')+
+    row('gnews','Google News RSS (keyless)','Headline feed for keyword hints.')+
+    row('newsapi','NewsAPI','Extra headlines. Free keys work from localhost only. newsapi.org');
+}
+function renderFilings(){
+  $('filings').innerHTML = '<div class="thead"><h2 style="margin:0">SEC filings (Nvidia)</h2><span class="sub">'+(pst('sec').lastOk?'checked '+ago(pst('sec').lastOk):'not loaded')+'</span></div>'+
+    (SEC.filings.length?'<ul>'+SEC.filings.map(f=>{
+      const lead = f.items.indexOf('5.02')>=0, earn = f.items.indexOf('2.02')>=0;
+      return '<li><a href="'+esc(f.url)+'" target="_blank" rel="noopener noreferrer">'+esc(f.form)+(f.items.length?': '+esc(f.items.map(i=>'Item '+i).join(', ')):'')+'</a> '+
+        (lead?'<span class="pill r" style="font-size:11px;padding:1px 7px">leadership change</span> ':'')+(earn?'<span class="pill b" style="font-size:11px;padding:1px 7px">earnings</span>':'')+
+        '<div class="meta">'+esc(f.items.map(i=>ITEMS[i]).filter(Boolean).join('; '))+' · '+dstr(f.ts)+'</div></li>';
+    }).join('')+'</ul>':'<div class="sub">No recent filings loaded. An 8-K with Item 5.02 is the official record of a CEO departure or appointment, usually within four business days.</div>');
+}
+function renderFacts(){
+  $('facts').innerHTML = '<h2>Reference (static, as of Nov 11, 2026)</h2><table class="f">'+
+    '<tr><td>Q3 FY27 earnings</td><td>Tue Nov 17, call 5 PM ET · '+(Date.now()<EARN_TS?'in '+countdown(EARN_TS):'out')+'</td></tr>'+
+    '<tr><td>Lawmakers’ briefing deadline</td><td>Wed Nov 18'+(Date.now()<BRIEF_TS?' · in '+countdown(BRIEF_TS):'')+'</td></tr>'+
+    '<tr><td>Q3 consensus</td><td>~$108.8B revenue · $2.47 EPS</td></tr>'+
+    '<tr><td>Company Q3 guidance</td><td>~$108B revenue</td></tr>'+
+    '<tr><td>Last quarter (Q2 FY27)</td><td>$96.2B revenue · $2.22 EPS</td></tr>'+
+    (SEC.facts.rev?'<tr><td>SEC-reported quarter ended '+esc(SEC.facts.rev.end)+'</td><td>$'+fmt(SEC.facts.rev.val/1e9,1)+'B revenue'+(SEC.facts.ni?' · $'+fmt(SEC.facts.ni.val/1e9,1)+'B net income':'')+(SEC.facts.eps?' · $'+fmt(SEC.facts.eps.val)+' GAAP EPS':'')+'</td></tr>':'')+
+    '<tr><td>Pre-admission close (Nov 6, approx.)</td><td>$'+fmt(S.levels.pre)+'</td></tr>'+
+    '<tr><td>Street range cited on TV</td><td>$145 support · $225 target</td></tr></table>'+
+    '<div class="sub" style="margin-top:8px">These do not update on their own. Edit the EPS and levels in Settings.</div>';
+}
+function renderLog(){
+  $('log').innerHTML = '<div class="thead"><h2 style="margin:0">Decision log</h2><div style="display:flex;gap:6px"><button class="btn sm" data-act="copylog">Copy</button><button class="btn sm" data-act="clearlog">Clear</button></div></div>'+
+    (S.log.length?'<ul class="plain">'+S.log.slice().reverse().map(e=>'<li><b>'+esc(e.action)+'</b> · '+esc(e.tranche)+' · NVDA $'+fmt(e.price)+' · '+dstr(e.ts)+'<div class="sub">'+esc(e.detail||'')+'</div></li>').join('')+'</ul>'
+      :'<div class="sub">Each Proceed, Wait or Skip is recorded here with the time, price and checklist, saved in this browser.</div>');
+}
+
+/* ============ review pop-up ============ */
+function openReview(id, test){ openTranche = {id:id,test:!!test}; drawReview(id, !!test); $('ov-review').classList.add('open'); }
+function closeReview(snoozeMin){ if(openTranche && !openTranche.test && snoozeMin){ S.snooze[openTranche.id] = Date.now()+snoozeMin*60000; save(); } openTranche = null; $('ov-review').classList.remove('open'); }
+function drawReview(id, test){
+  const trs = tranches(), t = trs.find(x=>x.id===id); if(!t) return;
+  const hs = hardStops(), stand = hs.some(h=>h.active), q = Q.NVDA, f = fresh(q), p = latest(q);
+  const allGreen = test || t.state==='review';
+  let verdict, vc;
+  if(stand && !test){ verdict='STAND DOWN. A hard stop is active.'; vc='stop'; }
+  else if(allGreen && (f||test)){ verdict='All required checks are green. If you agree with each one, proceed.'; vc='go'; }
+  else if(allGreen){ verdict='Checks are green, but the price feed is stale. Confirm the live price first.'; vc='hold'; }
+  else { verdict='Not there yet: required checks are still red. Wait.'; vc='hold'; }
+  const extra = [
+    {auto:true,label:'No hard stop active',ok:!stand,note:stand?hs.filter(h=>h.active).map(h=>h.label).join('; '):''},
+    {auto:true,label:'Price feed is fresh (under 3 minutes)',ok:f,note:f?esc(q.src)+', '+ago(q.fetchedAt):'Verify the price with your broker.'}
+  ];
+  $('review').innerHTML =
+    '<div class="thead"><div><div class="sub">'+(test?'TEST ALERT · nothing is logged':'Review now')+'</div><h3>'+t.title+' · $'+fmt(t.amt,0)+'</h3><div class="sub">'+esc(t.what)+' · NVDA $'+fmt(p)+'</div></div><button class="btn sm" data-act="closereview" aria-label="Close">✕</button></div>'+
+    '<div class="verdict '+vc+'">'+verdict+'</div>'+
+    '<ul class="chk">'+t.conds.map(c=>condHTML(c)).join('')+extra.map(c=>condHTML(c)).join('')+'</ul>'+
+    '<div class="sum">'+summaryLines(t).map(l=>'<div>'+l+'</div>').join('')+'</div>'+
+    '<div class="acts"><button class="btn primary" data-act="proceed" '+((allGreen&&!stand)||test?'':'disabled')+'>Proceed with $'+fmt(t.amt,0)+'</button>'+
+    '<button class="btn warn" data-act="wait">Wait 15 min</button><button class="btn" data-act="skip">Skip tranche</button></div>'+
+    '<div class="sub" style="margin-top:10px">Proceed only records your decision. Place the order yourself at your broker, with a limit price.</div>';
+}
+function logDecision(action){
+  if(!openTranche) return; const id = openTranche.id, test = openTranche.test;
+  if(!test){
+    const t = tranches().find(x=>x.id===id);
+    S.log.push({ts:Date.now(),tranche:t.title+' ($'+fmt(t.amt,0)+')',action:action,price:latest(Q.NVDA),
+      detail:t.conds.map(c=>(c.ok?'✓ ':'✕ ')+c.label).join(' | ')+' | source: '+(Q.NVDA.src||'')});
+    if(action==='Proceed') S.tranche[id]='done';
+    if(action==='Skip') S.tranche[id]='skipped';
+    if(action==='Wait') S.snooze[id]=Date.now()+15*60000;
+    save();
+  }
+  openTranche = null; $('ov-review').classList.remove('open'); render();
+}
+
+/* ============ settings ============ */
+function openSettings(){
+  const k = S.keys, f = (id,label,val,ph,type)=>'<div class="field"><label for="'+id+'">'+label+'</label><input id="'+id+'" value="'+esc(val==null?'':val)+'" placeholder="'+esc(ph||'')+'" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" '+(type?'inputmode="'+type+'"':'')+'></div>';
+  $('settings').innerHTML = '<div class="thead"><h3>Settings &amp; keys</h3><button class="btn sm" data-act="closesettings" aria-label="Close">✕</button></div>'+
+    '<div class="sub" style="margin-bottom:12px">Keys are optional. Paste one and that source switches on at the next refresh. Keys are stored only in this browser.</div>'+
+    f('k-finnhub','Finnhub API key (best first key to add)',k.finnhub)+f('k-twelve','Twelve Data API key',k.twelve)+f('k-fmp','Financial Modeling Prep API key',k.fmp)+
+    f('k-alpha','Alpha Vantage API key',k.alpha)+f('k-newsapi','NewsAPI key',k.newsapi)+
+    f('s-proxy','Custom CORS proxy prefix (optional)',S.proxy,'https://your-proxy.example/?url=')+
+    f('s-poll','Refresh every (seconds, minimum 20)',S.poll,'60','numeric')+
+    '<div class="grid2">'+f('s-eps','Quarterly consensus EPS $',S.levels.eps,'','decimal')+f('s-pre','Pre-admission close $',S.levels.pre,'','decimal')+
+    f('s-flush','Flush level $',S.levels.flush,'','decimal')+f('s-band','Flush band ±%',S.levels.band,'','decimal')+
+    f('s-a1','Tranche 1 $',S.amounts.t1,'','numeric')+f('s-a2','Tranche 2 $',S.amounts.t2,'','numeric')+f('s-a3','Tranche 3 $',S.amounts.t3,'','numeric')+'</div>'+
+    '<div class="acts" style="grid-template-columns:1fr 1fr"><button class="btn primary" data-act="savesettings">Save</button><button class="btn" data-act="testalert">Test the alert</button></div>'+
+    '<div style="margin-top:10px"><button class="btn sm" data-act="reset">Reset everything</button></div>';
+  $('ov-settings').classList.add('open');
+}
+function saveSettings(){
+  const v = id=>$(id).value.trim();
+  S.keys = {finnhub:v('k-finnhub'),twelve:v('k-twelve'),fmp:v('k-fmp'),alpha:v('k-alpha'),newsapi:v('k-newsapi')};
+  S.proxy = v('s-proxy'); S.poll = Math.max(20, parseInt(v('s-poll'),10)||60);
+  const set = (o,k,id,min)=>{ const n = num(v(id)); if(n!=null && n>(min||0)) o[k]=n; };
+  set(S.levels,'eps','s-eps'); set(S.levels,'pre','s-pre'); set(S.levels,'flush','s-flush'); set(S.levels,'band','s-band');
+  set(S.amounts,'t1','s-a1'); set(S.amounts,'t2','s-a2'); set(S.amounts,'t3','s-a3');
+  save(); for(const id of Object.keys(PST)){ PST[id].cool=0; PST[id].fails=0; if(PST[id].state!=='live') PST[id].state='idle'; }
+  lastAlpha = 0; $('ov-settings').classList.remove('open'); refreshQuotes(); refreshNews();
+}
+function showHint(k){
+  const h = hits(k);
+  $('hintbox').innerHTML = '<div class="thead"><h3>Related headlines</h3><button class="btn sm" data-act="closehint" aria-label="Close">✕</button></div>'+
+    '<div class="sub">Keyword matches from the last 36 hours. A match is not confirmation.</div><div class="news"><ul>'+
+    h.map(n=>'<li><a href="'+esc(n.url)+'" target="_blank" rel="noopener noreferrer">'+esc(n.title)+'</a><div class="meta">'+esc(n.src)+' · '+ago(n.ts)+'</div></li>').join('')+'</ul></div>';
+  $('ov-hint').classList.add('open');
+}
+
+/* ============ connection test ============ */
+async function testConnections(){
+  for(const k of Object.keys(directBad)) delete directBad[k];
+  for(const id of Object.keys(PST)){ PST[id].cool = 0; PST[id].fails = 0; }
+  const res = []; let done = false;
+  const draw = ()=>{
+    const ok = res.filter(r=>r.ok).length, tried = res.filter(r=>!r.skip).length;
+    let verdict = '';
+    if(done){
+      if(ok===0) verdict = '<div class="verdict stop">Nothing connected. This viewer is blocking network requests, which is what an in-app file preview does. Open this file in Safari or Chrome from a web address, or on a computer, and run the test again.</div>';
+      else if(!res.some(r=>r.ok&&r.quote)) verdict = '<div class="verdict hold">News or filings connected, but no price source did. Add a Finnhub key in Settings.</div>';
+      else verdict = '<div class="verdict go">'+ok+' of '+tried+' sources connected. Prices are live.</div>';
+    }
+    $('hintbox').innerHTML = '<div class="thead"><h3>Connection test</h3><button class="btn sm" data-act="closehint" aria-label="Close">✕</button></div>'+
+      (done?verdict:'<div class="sub">Testing each source once. This can take up to 30 seconds.</div>')+
+      '<ul class="chk" style="margin-top:10px">'+res.map(r=>'<li><div class="mark '+(r.skip?'na':(r.pending?'na':(r.ok?'ok':'no')))+'">'+(r.skip?'–':(r.pending?'…':(r.ok?'✓':'✕')))+'</div><div class="body">'+esc(r.name)+
+        '<div class="note">'+esc(r.skip?'Skipped: needs a key':(r.pending?'Testing':(r.detail||'')+(r.ms!=null?' · '+(r.ms/1000).toFixed(1)+'s':'')))+'</div></div></li>').join('')+'</ul>';
+  };
+  const run = (name, fn, skip, quote)=>{
+    const r = {name:name,skip:!!skip,pending:!skip,quote:!!quote}; res.push(r);
+    if(skip) return Promise.resolve();
+    const t = Date.now();
+    return fn().then(d=>{ r.ok=true; r.detail=d; }, e=>{ r.ok=false; r.detail=(e&&e.message)||'failed'; }).then(()=>{ r.pending=false; r.ms=Date.now()-t; draw(); });
+  };
+  const rss = (url)=>async()=>{ const n = parseRSS(await smartFetch(url),'').length; if(!n) throw new Error('no items'); return n+' headlines'; };
+  const jobs = ORDER.map(id=>run(PROV[id].name, async()=>{ const q = await PROV[id].quote('NVDA'); return 'NVDA $'+fmt(latest(q)); }, !enabled(id), true));
+  jobs.push(run('SEC EDGAR filings', async()=>{ const j = JSON.parse(await smartFetch('https://data.sec.gov/submissions/CIK'+SEC_CIK+'.json')); return (j.filings.recent.form.length)+' filings listed'; }));
+  jobs.push(run('Nvidia Newsroom RSS', rss('https://nvidianews.nvidia.com/releases.xml')));
+  jobs.push(run('CNBC Technology RSS', rss('https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=19854910')));
+  jobs.push(run('Google News RSS', rss('https://news.google.com/rss/search?q=Nvidia&hl=en-US&gl=US&ceid=US:en')));
+  draw(); $('ov-hint').classList.add('open');
+  await Promise.all(jobs); done = true; draw();
+  refreshQuotes(); refreshNews();
+}
+
+/* ============ events ============ */
+document.addEventListener('click', e=>{
+  const el = e.target.closest('[data-act]'); if(!el) return; const a = el.dataset.act;
+  if(a==='refresh'){ refreshQuotes(); refreshNews(); }
+  else if(a==='testconn') testConnections();
+  else if(a==='settings') openSettings();
+  else if(a==='closesettings') $('ov-settings').classList.remove('open');
+  else if(a==='savesettings') saveSettings();
+  else if(a==='testalert'){ $('ov-settings').classList.remove('open'); openReview('t1', true); beep(); }
+  else if(a==='reset'){ try{localStorage.removeItem(LS_KEY);}catch(x){} S = clone(DEFAULTS); $('ov-settings').classList.remove('open'); render(); }
+  else if(a==='sound'){ S.sound = !S.sound; if(S.sound){ try{ audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)(); audioCtx.resume(); }catch(x){} beep(); } $('soundbtn').textContent='Sound: '+(S.sound?'on':'off'); save(); }
+  else if(a==='toggle'){ S.manual[el.dataset.k] = !S.manual[el.dataset.k]; save(); render(); }
+  else if(a==='hint') showHint(el.dataset.k);
+  else if(a==='closehint') $('ov-hint').classList.remove('open');
+  else if(a==='uselow'){ const low = Q.NVDA && Q.NVDA.low; if(low!=null){ S.levels[el.dataset.level]=low; save(); render(); } else { el.textContent='No low from feed yet'; } }
+  else if(a==='review') openReview(el.dataset.t, false);
+  else if(a==='closereview') closeReview(5);
+  else if(a==='proceed') logDecision('Proceed');
+  else if(a==='wait') logDecision('Wait');
+  else if(a==='skip') logDecision('Skip');
+  else if(a==='reopen'){ S.tranche[el.dataset.t]='open'; save(); render(); }
+  else if(a==='add'){ const inp = $('add-'+el.dataset.g), s = inp.value.trim().toUpperCase();
+    if(/^[A-Z][A-Z.\-]{0,7}$/.test(s) && s!=='NVDA' && !S.tickers.some(t=>t.s===s)){ S.tickers.push({s:s,g:el.dataset.g}); save(); render(); refreshQuotes(); } else { inp.value=''; inp.placeholder='Invalid or duplicate'; } }
+  else if(a==='move'){ const t = S.tickers.find(t=>t.s===el.dataset.s); if(t){ t.g = t.g==='linked'?'comp':'linked'; save(); render(); } }
+  else if(a==='remove'){ S.tickers = S.tickers.filter(t=>t.s!==el.dataset.s); delete Q[el.dataset.s]; save(); render(); }
+  else if(a==='copylog'){ const txt = S.log.map(e=>new Date(e.ts).toISOString()+'\t'+e.action+'\t'+e.tranche+'\tNVDA $'+fmt(e.price)+'\t'+(e.detail||'')).join('\n')||'No decisions yet.';
+    try{ navigator.clipboard.writeText(txt).then(()=>{el.textContent='Copied';},()=>{el.textContent='Copy blocked';}); }catch(x){ el.textContent='Copy blocked'; } }
+  else if(a==='clearlog'){ if(el.dataset.sure){ S.log=[]; save(); render(); } else { el.dataset.sure='1'; el.textContent='Tap again to clear'; } }
+});
+document.addEventListener('change', e=>{
+  const el = e.target; if(el.dataset && el.dataset.level){ const n = num(el.value); S.levels[el.dataset.level] = (n!=null&&n>0)?n:(el.dataset.level==='flush'?S.levels.flush:null); save(); render(); }
+});
+document.addEventListener('keydown', e=>{ if(e.key==='Enter' && e.target.id && e.target.id.indexOf('add-')===0){ const b = document.querySelector('[data-act="add"][data-g="'+e.target.id.slice(4)+'"]'); if(b) b.click(); } });
+window.addEventListener('online', ()=>{ refreshQuotes(); refreshNews(); });
+
+/* ============ boot ============ */
+function typing(){ const a = document.activeElement; return a && (a.tagName==='INPUT'||a.tagName==='SELECT') && !a.closest('.modal'); }
+$('soundbtn').textContent = 'Sound: off'; S.sound = false;   // audio needs a tap each session
+render();
+refreshQuotes(); refreshNews();
+setInterval(()=>{
+  const now = Date.now();
+  if(now-lastQuoteRun >= S.poll*1000) refreshQuotes();
+  else if(now-lastNewsRun >= 300000) refreshNews();
+  else if(!typing() && !document.querySelector('.ov.open:not(#ov-review)')) render();
+}, 5000);
+</script>
+</body>
+</html>
